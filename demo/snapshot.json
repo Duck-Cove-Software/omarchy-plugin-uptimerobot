@@ -1,0 +1,75 @@
+{
+    "groups": [
+        { "id": 10, "name": "Production" },
+        { "id": 20, "name": "Home" }
+    ],
+    "monitors": [
+        {
+            "id": 101,
+            "friendly_name": "api.example.com",
+            "status": 9,
+            "monitor_group": 10,
+            "custom_uptime_ratio": "98.12",
+            "average_response_time": 240,
+            "ssl": { "expires": 1770000000 },
+            "logs": [
+                { "type": 2, "datetime": 1758614400 },
+                {
+                    "type": 1,
+                    "datetime": 1758621600,
+                    "reason": { "code": "512", "detail": "Connection timeout after 30 seconds" }
+                }
+            ],
+            "response_times": [
+                { "datetime": 1758618000, "value": 180 },
+                { "datetime": 1758619800, "value": 210 },
+                { "datetime": 1758621000, "value": 260 }
+            ]
+        },
+        {
+            "id": 102,
+            "friendly_name": "db.example.com",
+            "status": 2,
+            "monitor_group": 10,
+            "custom_uptime_ratio": "100.00",
+            "average_response_time": 12,
+            "logs": [{ "type": 2, "datetime": 1758500000 }],
+            "response_times": [
+                { "datetime": 1758618000, "value": 11 },
+                { "datetime": 1758619800, "value": 13 },
+                { "datetime": 1758621600, "value": 12 }
+            ]
+        },
+        {
+            "id": 201,
+            "friendly_name": "Home Assistant",
+            "status": 2,
+            "monitor_group": 20,
+            "custom_uptime_ratio": "99.95",
+            "average_response_time": 40,
+            "logs": [{ "type": 2, "datetime": 1758500000 }],
+            "response_times": [
+                { "datetime": 1758618000, "value": 38 },
+                { "datetime": 1758621600, "value": 42 }
+            ]
+        },
+        {
+            "id": 301,
+            "friendly_name": "status page",
+            "status": 2,
+            "monitor_group": 0,
+            "custom_uptime_ratio": "100",
+            "average_response_time": 90,
+            "logs": [],
+            "response_times": [{ "datetime": 1758621600, "value": 90 }]
+        },
+        {
+            "id": 302,
+            "friendly_name": "old staging",
+            "status": 0,
+            "monitor_group": 10,
+            "logs": [],
+            "response_times": []
+        }
+    ]
+}
