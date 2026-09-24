@@ -46,6 +46,8 @@ input="$(/usr/bin/head -n 1)"
 umask 077
 body_file="$(/usr/bin/mktemp -p "$XDG_RUNTIME_DIR" duckcove-uptimerobot-body.XXXXXXXXXX)" ||
     die "Could not create a private file for the response"
+groups_file="$(/usr/bin/mktemp -p "$XDG_RUNTIME_DIR" duckcove-uptimerobot-groups.XXXXXXXXXX)" ||
+    die "Could not create a private file for the response"
 code_file="$(/usr/bin/mktemp -p "$XDG_RUNTIME_DIR" duckcove-uptimerobot-code.XXXXXXXXXX)" ||
     die "Could not create a private file for the status"
 cfg_file="$(/usr/bin/mktemp -p "$XDG_RUNTIME_DIR" duckcove-uptimerobot-curl.XXXXXXXXXX)" ||
@@ -56,7 +58,7 @@ cleanup() {
     if [[ -n $job ]]; then
         kill -- "$job" 2>/dev/null
     fi
-    /usr/bin/rm -f -- "$body_file" "$code_file" "$cfg_file"
+    /usr/bin/rm -f -- "$body_file" "$groups_file" "$code_file" "$cfg_file"
 }
 
 on_signal() {
@@ -88,12 +90,12 @@ fetch_monitors() {
     wait "$job" 2>/dev/null
     rc=$?
     job=""
-    _classify "$rc"
+    _classify "$rc" "$body_file"
 }
 
 fetch_groups() {
     local rc
-    : >"$body_file"
+    : >"$groups_file"
     : >"$code_file"
     {
         printf '%s' "$input" |
@@ -101,21 +103,22 @@ fetch_groups() {
         /usr/bin/curl -q -sS --noproxy '*' --proto '=https' --proto-redir '=https' \
             --max-time 20 --max-filesize "$MAX_BODY" \
             -K "$cfg_file" \
-            -o "$body_file" -w '%{http_code}' \
+            -o "$groups_file" -w '%{http_code}' \
             "$API_V3_GROUPS" >"$code_file"
     } &
     job=$!
     wait "$job" 2>/dev/null
     rc=$?
     job=""
-    _classify "$rc"
+    _classify "$rc" "$groups_file"
 }
 
 _classify() {
     local rc="$1"
+    local file="$2"
     local code
     local size
-    size=$(/usr/bin/wc -c <"$body_file")
+    size=$(/usr/bin/wc -c <"$file")
     code="$(/usr/bin/tr -d '[:space:]' <"$code_file")"
     if ((size > MAX_BODY)) || ((rc == 63)); then
         return 2
@@ -168,8 +171,9 @@ groups='[]'
 fetch_groups
 case $? in
     0)
+        page="$(/usr/bin/cat "$groups_file")"
         groups="$(
-            /usr/bin/cat "$body_file" |
+            printf '%s' "$page" |
                 /usr/bin/jq -c '
                     (.data // .monitor_groups // .groups // [])
                     | map({

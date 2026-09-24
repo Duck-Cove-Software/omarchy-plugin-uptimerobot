@@ -2,7 +2,7 @@
     "schemaVersion": 1,
     "id": "duckcove.uptimerobot",
     "name": "UptimeRobot",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "duckcove",
     "description": "Operator view of an UptimeRobot account: monitor groups, the error text of a failed check, a bar circle that is green while everything is up and red when something breaks, and a notification when it turns red.",
     "license": "MIT",

@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
 - Poll interval and grace period are now settings (`pollSeconds`, `graceSeconds`) on the bar entry in `shell.json`. Defaults change to a 20s poll (was 60s) and no grace period (was 30s), so an outage reaches you up to 70s sooner.
+- The monitor-groups response is kept in its own private file instead of reusing the monitors one.
 
 ## 1.0.0
 
