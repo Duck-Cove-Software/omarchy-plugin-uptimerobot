@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Poll interval and grace period are now settings (`pollSeconds`, `graceSeconds`) on the bar entry in `shell.json`. Defaults change to a 20s poll (was 60s) and no grace period (was 30s), so an outage reaches you up to 70s sooner.
+
 ## 1.0.0
 
 First release. An operator view of an UptimeRobot account for Omarchy 4.x.

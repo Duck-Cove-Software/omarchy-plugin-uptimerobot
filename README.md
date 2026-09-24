@@ -10,7 +10,7 @@ The moment the circle goes from green to red, you also get a desktop notificatio
 
 UptimeRobot's v2 `getMonitors` call is the one that can carry what an operator view needs in a single round trip: monitor groups, the log text of a failure, response-time samples, 24-hour uptime, and certificate expiry. The v3 list endpoint is cleaner and cannot.
 
-The plugin polls once a minute. That is not push — UptimeRobot has no socket for this — and it is inside the free-plan rate limit of 10 requests per minute.
+The plugin polls every 20 seconds by default. That is not push — UptimeRobot has no socket for this — and it is inside the free-plan rate limit of 10 requests per minute. How fast you hear about an outage is mostly down to the check interval of each monitor in UptimeRobot (5 minutes on the free plan); for production, also turn on UptimeRobot's own mobile, SMS or voice alerts, which reach you away from this machine.
 
 ## Requirements
 
@@ -41,6 +41,23 @@ If the panel will not open — the shell is not running, or you are debugging a 
 ```
 ~/.config/omarchy/plugins/duckcove.uptimerobot/bin/authenticate.sh
 ```
+
+## Settings
+
+Two timings can be set on the plugin's bar entry in `~/.config/omarchy/shell.json`. The shell hot-reloads the file on save.
+
+```json
+{ "id": "duckcove.uptimerobot", "pollSeconds": 20, "graceSeconds": 0 }
+```
+
+| Key            | Default | Range   | Does                                                                                                    |
+| -------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `pollSeconds`  | `20`    | 15–3600 | How often to ask UptimeRobot for the latest status                                                      |
+| `graceSeconds` | `0`     | 0–600   | How long a monitor must stay Down, or UptimeRobot unreachable, before the bar turns red and you're told |
+
+Each poll is one request plus one per 50 monitors, so keep `pollSeconds` at 15 or more on the free plan's 10 requests a minute (more if you have over 50 monitors). With `graceSeconds` at 0, a single failed poll — your own network dropping for a moment — turns the bar red and sends a notification; set it to 30 or so if that is too eager. UptimeRobot has already retried before it reports a monitor Down, so the grace period does not need to cover that.
+
+The settings are read by the bar widget, so they apply while the plugin is in the bar; without it, the defaults are used.
 
 ## Keybinding
 
@@ -89,7 +106,7 @@ Nothing else is left behind: no cache, no state directory, and no service, timer
 
 ## Developing
 
-Clone into `~/.config/omarchy/plugins/duckcove.uptimerobot` and work there — plugin folders may not contain symlinks, so the usual symlink-the-repo trick does not apply. Saving a file hot-reloads the shell.
+Clone into `~/.config/omarchy/plugins/duckcove.uptimerobot` and work there — plugin folders may not contain symlinks, so the usual symlink-the-repo trick does not apply. Saving a file hot-reloads the bar widget and the Pane, but not `Service.qml` or what it imports: the shell keeps a running service across a reload, so run `omarchy restart shell` after changing it.
 
 ```
 bun test

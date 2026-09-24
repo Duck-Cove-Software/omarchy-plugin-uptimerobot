@@ -23,7 +23,31 @@
         "category": "Network",
         "allowMultiple": false,
         "defaultSection": "right",
-        "defaults": {},
-        "schema": []
+        "defaults": {
+            "pollSeconds": 20,
+            "graceSeconds": 0
+        },
+        "schema": [
+            {
+                "key": "pollSeconds",
+                "type": "integer",
+                "label": "Poll interval (seconds)",
+                "min": 15,
+                "max": 3600,
+                "step": 5,
+                "defaultValue": 20,
+                "description": "How often to ask UptimeRobot for the latest status. Each poll is one request plus one per 50 monitors; the free plan allows 10 a minute."
+            },
+            {
+                "key": "graceSeconds",
+                "type": "integer",
+                "label": "Grace period (seconds)",
+                "min": 0,
+                "max": 600,
+                "step": 5,
+                "defaultValue": 0,
+                "description": "How long a monitor must stay Down, or UptimeRobot unreachable, before the bar turns red and you are notified."
+            }
+        ]
     }
 }

@@ -5,6 +5,7 @@ import qs.Commons
 import "src/model.js" as Model
 import "src/alerts.js" as Alerts
 import "src/sanitize.js" as Sanitize
+import "src/settings.js" as Settings
 
 // Owns the one connection to UptimeRobot and the state derived from it.
 //
@@ -17,6 +18,12 @@ Item {
     property string omarchyPath: ""
     property var shell: null
     property var manifest: null
+
+    // Pushed down by the Indicator: the shell injects settings into bar
+    // widgets only, never into a service. Until it does — or if the widget is
+    // not in the bar at all — the defaults apply.
+    property int pollSeconds: Settings.POLL_DEFAULT
+    property int graceSeconds: Settings.GRACE_DEFAULT
 
     // "setup" — nothing configured yet, or the stored key was refused
     // "connecting" — a snapshot is being fetched
@@ -35,9 +42,11 @@ Item {
     // them, and a notification has to fire whether or not the widget is in
     // the bar at all.
     //
-    // Down and Unreachable both wait out a grace period before they count: a
-    // monitor that flaps for one poll, or a network that drops for a moment,
-    // is not worth turning the bar red for, let alone interrupting someone.
+    // Down and Unreachable can be made to wait out a grace period before they
+    // count, for someone who would rather not hear about a monitor that flaps
+    // for one poll or a network that drops for a moment. The default is none:
+    // UptimeRobot has already retried before it reports Down, so waiting
+    // again here only delays the news.
     readonly property bool wantsAttention: view.counts.down > 0 || connection === "unreachable"
     readonly property bool alerting: _armed && wantsAttention
     // Only on a confirmed snapshot: a green light that might be stale is the
@@ -57,7 +66,6 @@ Item {
     readonly property int _replyMaxChars: 65536
     readonly property int _payloadMaxChars: 4000000
     readonly property int _demoMaxBytes: 524288
-    readonly property int _pollSeconds: 60
 
     readonly property string _pluginDir: Qt.resolvedUrl(".").toString().replace("file://", "")
 
@@ -92,16 +100,19 @@ Item {
         if (!wantsAttention) {
             graceTimer.stop();
             _armed = false;
+        } else if (!_armed && graceSeconds <= 0) {
+            _armed = true;
         } else if (!_armed && !graceTimer.running) {
             graceTimer.restart();
         }
     }
 
     onWantsAttentionChanged: _evaluateAttention()
+    onGraceSecondsChanged: _evaluateAttention()
 
     Timer {
         id: graceTimer
-        interval: 30000
+        interval: root.graceSeconds * 1000
         repeat: false
         onTriggered: if (root.wantsAttention) root._armed = true
     }
@@ -211,7 +222,7 @@ Item {
 
     Timer {
         id: pollTimer
-        interval: root._pollSeconds * 1000
+        interval: root.pollSeconds * 1000
         repeat: true
         onTriggered: root.start()
     }

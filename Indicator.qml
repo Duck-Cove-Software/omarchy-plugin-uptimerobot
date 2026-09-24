@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Commons
 import qs.Ui
+import "src/settings.js" as Settings
 
 // The bar presence: a quiet green circle while every Monitor is Up, and a red
 // circle once something is Down or UptimeRobot itself is Unreachable.
@@ -21,6 +22,20 @@ BarWidget {
     readonly property bool alerting: service ? service.alerting : false
     readonly property bool healthy: service ? service.healthy : false
     readonly property bool showing: alerting || healthy
+
+    // The host injects settings into bar widgets but not into services, so the
+    // widget is where configuration enters and gets pushed down.
+    function pushSettings() {
+        if (!service) {
+            return;
+        }
+        service.pollSeconds = Settings.pollSeconds(setting("pollSeconds", Settings.POLL_DEFAULT));
+        service.graceSeconds = Settings.graceSeconds(setting("graceSeconds", Settings.GRACE_DEFAULT));
+    }
+
+    onSettingsChanged: pushSettings()
+    onServiceChanged: pushSettings()
+    Component.onCompleted: pushSettings()
 
     readonly property int slotPadding: Style.space(14)
 
